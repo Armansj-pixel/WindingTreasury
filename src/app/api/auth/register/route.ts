@@ -13,7 +13,9 @@ export async function POST(req: Request) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user) return err('Unauthorized', 401)
+    if (!user) {
+      return err('Unauthorized', 401)
+    }
 
     const { data: caller, error: callerError } = await supabase
       .from('users')
@@ -21,8 +23,13 @@ export async function POST(req: Request) {
       .eq('id', user.id)
       .single()
 
-    if (callerError) return err(callerError.message, 500)
-    if (caller?.role !== 'ADMIN') return err('Forbidden', 403)
+    if (callerError) {
+      return err(callerError.message, 500)
+    }
+
+    if (caller?.role !== 'ADMIN') {
+      return err('Forbidden', 403)
+    }
 
     const body = await req.json()
     const {
@@ -55,57 +62,27 @@ export async function POST(req: Request) {
       return err(authError?.message || 'Gagal membuat user auth', 400)
     }
 
-    const { error: profileError } = await supabaseAdmin.from('users').update({
-      email,
-      nama,
-      departemen: departemen || null,
-      role,
-      status: 'AKTIF',
-      no_hp: no_hp || null,
-      catatan: catatan || null,
-      is_locked: false,
-    }).eq('id', authData.user.id)
+    const { error: profileError } = await supabaseAdmin
+      .from('users')
+      .update({
+        email,
+        nama,
+        departemen: departemen || null,
+        role,
+        status: 'AKTIF',
+        no_hp: no_hp || null,
+        catatan: catatan || null,
+        is_locked: false,
+      })
+      .eq('id', authData.user.id)
 
     if (profileError) {
       return err(profileError.message, 500)
     }
 
-    return ok({ message: 'Anggota berhasil ditambahkan' }, 201)
-  } catch (e) {
-    return err('Internal server error', 500)
-  }
-      }
-    const { data: authData, error: authError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: { full_name: nama },
-      })
-
-    if (authError) return err(authError.message, 400)
-
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('users')
-      .update({
-        nama,
-        departemen: departemen ?? null,
-        no_hp: no_hp ?? null,
-        role: role ?? 'USER',
-        catatan: catatan ?? null,
-        status: 'AKTIF',
-        is_locked: false,
-      })
-      .eq('id', authData.user.id)
-      .select()
-      .single()
-
-    if (profileError) return err(profileError.message, 500)
-
     return ok(
       {
         message: 'Anggota berhasil ditambahkan',
-        user: profile,
       },
       201
     )
