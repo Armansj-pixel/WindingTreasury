@@ -1,31 +1,36 @@
-import { createClient }  from '@/lib/supabase/server'
-import { supabaseAdmin } from '@/lib/supabase/admin'
-import { ok, err, paginated } from '@/lib/utils/response'
+import { createClient } from '@/lib/supabase/server'
+import { err, ok } from '@/lib/utils/response'
 
-export async function GET(req: Request) {
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
+export async function GET() {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
     if (!user) return err('Unauthorized', 401)
 
-    const { searchParams } = new URL(req.url)
-    const page   = parseInt(searchParams.get('page')   ?? '1')
-    const limit  = parseInt(searchParams.get('limit')  ?? '20')
-    const status = searchParams.get('status')
-    const from   = (page - 1) * limit
-
-    let query = supabase
+    const { data: caller, error: callerError } = await supabase
       .from('users')
-      .select('*', { count: 'exact' })
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (callerError) return err(callerError.message, 500)
+    if (caller?.role !== 'ADMIN') return err('Forbidden', 403)
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, nama, email, departemen, role, status, no_hp, tgl_gabung, created_at')
       .order('created_at', { ascending: false })
-      .range(from, from + limit - 1)
 
-    if (status) query = query.eq('status', status)
+    if (error) return err(error.message, 500)
 
-    const { data, error, count } = await query
-    if (error) return err(error.message)
-
-    return paginated(data ?? [], count ?? 0, page, limit)
+    return ok(data)
   } catch {
     return err('Internal server error', 500)
   }
