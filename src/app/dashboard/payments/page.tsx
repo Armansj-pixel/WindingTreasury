@@ -5,7 +5,7 @@ import { PaymentsTable } from "@/components/dashboard/payments/payments-table";
 export default async function PaymentsPage() {
   const supabase = createSupabaseAdminClient();
 
-  const [{ data: members }, { data: payments }] = await Promise.all([
+  const [{ data: members, error: membersError }, { data: payments }] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, full_name, email, role")
@@ -56,13 +56,18 @@ export default async function PaymentsPage() {
 
   return (
     <section className="space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6">
+        <p className="text-sm text-slate-500">Members count: {memberOptions.length}</p>
+        <p className="text-sm text-slate-500">Members error: {membersError?.message || "-"}</p>
+        <pre className="mt-4 overflow-x-auto rounded-xl bg-slate-100 p-4 text-xs text-slate-700">
+          {JSON.stringify(memberOptions.slice(0, 5), null, 2)}
+        </pre>
+      </div>
+
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-medium text-slate-500">Modul Keuangan</p>
           <h1 className="text-2xl font-semibold text-slate-900">Iuran Anggota</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Kelola pembayaran iuran wajib dan sukarela anggota.
-          </p>
         </div>
 
         <PaymentCreateDialog members={memberOptions} />
