@@ -10,8 +10,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  async function handleLogin() {
     setLoading(true)
     setError('')
 
@@ -39,15 +38,14 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 space-y-4">
+    <div className="mt-6 space-y-4">
       <div>
         <label className="mb-1 block text-sm font-medium">Email</label>
         <input
           type="email"
-          name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border px-3 py-2"
+          className="w-full rounded-xl border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
           placeholder="nama@email.com"
           required
         />
@@ -57,10 +55,9 @@ export default function LoginForm() {
         <label className="mb-1 block text-sm font-medium">Password</label>
         <input
           type="password"
-          name="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-xl border px-3 py-2"
+          className="w-full rounded-xl border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
           placeholder="••••••••"
           required
         />
@@ -73,12 +70,13 @@ export default function LoginForm() {
       )}
 
       <button
-        type="submit"
+        type="button"
+        onClick={handleLogin}
         disabled={loading}
-        className="w-full rounded-xl bg-black px-4 py-2 text-white"
+        className="w-full rounded-xl bg-black px-4 py-2 font-medium text-white disabled:opacity-60"
       >
         {loading ? 'Memproses...' : 'Masuk'}
       </button>
-    </form>
+    </div>
   )
 }
