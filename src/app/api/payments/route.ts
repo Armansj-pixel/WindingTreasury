@@ -1,86 +1,116 @@
-import { createClient }   from '@/lib/supabase/server'
-import { supabaseAdmin }  from '@/lib/supabase/admin'
-import { ok, err, paginated } from '@/lib/utils/response'
+import { NextResponse } from "next/server";
+import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 
-// GET /api/payments?page=1&limit=20&bulan=2025-06&user_id=xxx
-export async function GET(req: Request) {
-  try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return err('Unauthorized', 401)
+export async function GET() {
+  const supabase = createSupabaseAdminClient();
 
-    const { searchParams } = new URL(req.url)
-    const page   = parseInt(searchParams.get('page')  ?? '1')
-    const limit  = parseInt(searchParams.get('limit') ?? '20')
-    const bulan  = searchParams.get('bulan')
-    const userId = searchParams.get('user_id')
-    const from   = (page - 1) * limit
+  const { data, error } = await supabase
+    .from("payments")
+    .select(`
+      id,
+      user_id,
+      payment_period,
+      payment_type,
+      payment_method,
+      amount,
+      productive_amount,
+      social_amount,
+      operational_amount,
+      paid_at,
+      notes,
+      created_at,
+      profiles:user_id (
+        full_name
+      )
+    `)
+    .order("created_at", { ascending: false });
 
-    let query = supabase
-      .from('payments')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, from + limit - 1)
-
-    if (bulan)  query = query.eq('bulan', bulan)
-    if (userId) query = query.eq('user_id', userId)
-
-    const { data, error, count } = await query
-    if (error) return err(error.message)
-
-    return paginated(data ?? [], count ?? 0, page, limit)
-  } catch {
-    return err('Internal server error', 500)
+  if (error) {
+    return NextResponse.json(
+      { message: "Gagal mengambil data iuran.", error: error.message },
+      { status: 500 }
+    );
   }
+
+  const rows = (data || []).map((item: any) => ({
+    id: item.id,
+    user_id: item.user_id,
+    member_name: item.profiles?.full_name || "Tanpa Nama",
+    payment_period: item.payment_period,
+    payment_type: item.payment_type,
+    payment_method: item.payment_method,
+    amount: item.amount,
+    productive_amount: item.productive_amount,
+    social_amount: item.social_amount,
+    operational_amount: item.operational_amount,
+    paid_at: item.paid_at,
+    notes: item.notes,
+    created_at: item.created_at,
+  }));
+
+  return NextResponse.json({ data: rows });
 }
 
-// POST /api/payments — catat iuran baru (admin only)
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return err('Unauthorized', 401)
+    const body = await req.json();
 
-    const body = await req.json()
-    const { user_id, nama, bulan, nominal, jenis, metode, catatan } = body
+    const {
+      user_id,
+      payment_period,
+      payment_type,
+      payment_method,
+      amount,
+      paid_at,
+      notes,
+    } = body;
 
-    if (!user_id || !nama || !bulan || !nominal || !jenis) {
-      return err('Field wajib: user_id, nama, bulan, nominal, jenis')
+    if (!user_id || !payment_period || !payment_type || !payment_method || !amount || !paid_at) {
+      return NextResponse.json(
+        { message: "Data iuran belum lengkap." },
+        { status: 400 }
+      );
     }
 
-    // Insert via admin client agar trigger split berjalan
-    const { data, error } = await supabaseAdmin
-      .from('payments')
-      .insert({
-        user_id,
-        nama,
-        bulan,
-        nominal,
-        jenis:        jenis   ?? 'WAJIB',
-        metode:       metode  ?? 'TUNAI',
-        dicatat_oleh: user.id,
-        catatan
-      })
-      .select()
-      .single()
+    const supabase = createSupabaseAdminClient();
 
-    if (error) return err(error.message)
+    const { data: existing } = await supabase
+      .from("payments")
+      .select("id")
+      .eq("user_id", user_id)
+      .eq("payment_period", payment_period)
+      .eq("payment_type", payment_type)
+      .limit(1);
 
-    // Catat ke kas_mutasi
-    await supabaseAdmin.from('kas_mutasi').insert({
-      tgl:       data.tgl_bayar,
-      tipe:      'IURAN_MASUK',
-      pos:       'UMUM',
-      nominal:   data.nominal,
-      arah:      'MASUK',
-      ref_table: 'payments',
-      ref_id:    data.id,
-      dicatat_oleh: user.id,
-      catatan:   `Iuran ${jenis} ${nama} bulan ${bulan}`
-    })
+    if (payment_type === "WAJIB" && existing && existing.length > 0) {
+      return NextResponse.json(
+        { message: "Iuran wajib untuk periode ini sudah ada." },
+        { status: 409 }
+      );
+    }
 
-    return ok(data, 201)
-  } catch {
-    return err('Internal server error', 500)
+    const { error } = await supabase.from("payments").insert({
+      user_id,
+      payment_period,
+      payment_type,
+      payment_method,
+      amount,
+      paid_at,
+      notes: notes || null,
+    });
+
+    if (error) {
+      return NextResponse.json(
+        { message: "Gagal menyimpan iuran.", error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ message: "Iuran berhasil ditambahkan." });
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Terjadi kesalahan server." },
+      { status: 500 }
+    );
   }
 }
