@@ -17,7 +17,9 @@ export default function LoginForm() {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, password }),
       })
 
@@ -43,11 +45,11 @@ export default function LoginForm() {
         <label className="mb-1 block text-sm font-medium">Email</label>
         <input
           type="email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full rounded-xl border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
           placeholder="nama@email.com"
-          required
         />
       </div>
 
@@ -55,19 +57,19 @@ export default function LoginForm() {
         <label className="mb-1 block text-sm font-medium">Password</label>
         <input
           type="password"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full rounded-xl border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
           placeholder="••••••••"
-          required
         />
       </div>
 
-      {error && (
+      {error ? (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
-      )}
+      ) : null}
 
       <button
         type="button"
