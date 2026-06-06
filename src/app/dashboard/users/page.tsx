@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import AddUserModal from '@/components/dashboard/add-user-modal'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,23 +11,19 @@ export default async function UsersPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  if (!user) redirect('/login')
 
-  const { data: caller, error: callerError } = await supabase
+  const { data: caller } = await supabase
     .from('users')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  if (callerError || caller?.role !== 'ADMIN') {
+  if (caller?.role !== 'ADMIN') {
     return (
       <section className="rounded-2xl bg-white p-5 shadow-sm">
         <h1 className="text-xl font-semibold">Akses ditolak</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Halaman ini hanya untuk admin.
-        </p>
+        <p className="mt-2 text-sm text-zinc-600">Halaman ini hanya untuk admin.</p>
       </section>
     )
   }
@@ -47,11 +44,12 @@ export default async function UsersPage() {
 
   return (
     <section className="space-y-4">
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h1 className="text-xl font-semibold">Daftar Anggota</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Data anggota yang terdaftar di sistem
-        </p>
+      <div className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm">
+        <div>
+          <h1 className="text-xl font-semibold">Daftar Anggota</h1>
+          <p className="mt-1 text-sm text-zinc-500">Data anggota yang terdaftar di sistem</p>
+        </div>
+        <AddUserModal />
       </div>
 
       <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
