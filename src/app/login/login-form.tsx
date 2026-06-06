@@ -10,7 +10,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -44,9 +44,10 @@ export default function LoginForm() {
         <label className="mb-1 block text-sm font-medium">Email</label>
         <input
           type="email"
+          name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+          className="w-full rounded-xl border px-3 py-2"
           placeholder="nama@email.com"
           required
         />
@@ -56,9 +57,10 @@ export default function LoginForm() {
         <label className="mb-1 block text-sm font-medium">Password</label>
         <input
           type="password"
+          name="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-xl border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+          className="w-full rounded-xl border px-3 py-2"
           placeholder="••••••••"
           required
         />
@@ -73,7 +75,7 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-black px-4 py-2 font-medium text-white disabled:opacity-60"
+        className="w-full rounded-xl bg-black px-4 py-2 text-white"
       >
         {loading ? 'Memproses...' : 'Masuk'}
       </button>
