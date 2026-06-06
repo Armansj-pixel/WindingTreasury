@@ -1,18 +1,49 @@
-async function getUsers() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users`, {
-    cache: 'no-store',
-  })
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
-  if (!res.ok) {
-    throw new Error('Gagal mengambil data users')
-  }
-
-  return res.json()
-}
+export const dynamic = 'force-dynamic'
 
 export default async function UsersPage() {
-  const result = await getUsers()
-  const users = result.data ?? []
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  const { data: caller, error: callerError } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (callerError || caller?.role !== 'ADMIN') {
+    return (
+      <section className="rounded-2xl bg-white p-5 shadow-sm">
+        <h1 className="text-xl font-semibold">Akses ditolak</h1>
+        <p className="mt-2 text-sm text-zinc-600">
+          Halaman ini hanya untuk admin.
+        </p>
+      </section>
+    )
+  }
+
+  const { data: users, error } = await supabase
+    .from('users')
+    .select('id, nama, email, departemen, role, status, no_hp, tgl_gabung, created_at')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    return (
+      <section className="rounded-2xl bg-white p-5 shadow-sm">
+        <h1 className="text-xl font-semibold">Gagal memuat anggota</h1>
+        <p className="mt-2 text-sm text-red-600">{error.message}</p>
+      </section>
+    )
+  }
 
   return (
     <section className="space-y-4">
@@ -36,13 +67,13 @@ export default async function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user: any) => (
-                <tr key={user.id} className="border-t">
-                  <td className="px-4 py-3">{user.nama}</td>
-                  <td className="px-4 py-3">{user.email}</td>
-                  <td className="px-4 py-3">{user.departemen ?? '-'}</td>
-                  <td className="px-4 py-3">{user.role}</td>
-                  <td className="px-4 py-3">{user.status}</td>
+              {users?.map((item) => (
+                <tr key={item.id} className="border-t">
+                  <td className="px-4 py-3">{item.nama}</td>
+                  <td className="px-4 py-3">{item.email}</td>
+                  <td className="px-4 py-3">{item.departemen ?? '-'}</td>
+                  <td className="px-4 py-3">{item.role}</td>
+                  <td className="px-4 py-3">{item.status}</td>
                 </tr>
               ))}
             </tbody>
