@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const items = [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Anggota", href: "/dashboard/members" },
+  { label: "Anggota", href: "/dashboard/users" },
   { label: "Iuran", href: "/dashboard/payments" },
   { label: "Pembiayaan", href: "/dashboard/financing" },
   { label: "Pengeluaran", href: "/dashboard/expenses" },
