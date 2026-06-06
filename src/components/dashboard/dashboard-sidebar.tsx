@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import clsx from "clsx";
 
 const items = [
   { label: "Dashboard", href: "/dashboard" },
@@ -32,18 +31,18 @@ export function DashboardSidebar() {
 
         <nav className="flex-1 space-y-1 px-4 py-4">
           {items.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={clsx(
-                  "flex items-center rounded-xl px-4 py-3 text-sm font-medium transition",
+                className={
                   active
-                    ? "bg-slate-900 text-white"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                )}
+                    ? "flex items-center rounded-xl px-4 py-3 text-sm font-medium transition bg-slate-900 text-white"
+                    : "flex items-center rounded-xl px-4 py-3 text-sm font-medium transition text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }
               >
                 {item.label}
               </Link>
