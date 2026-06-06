@@ -5,33 +5,35 @@ import { PaymentsTable } from "@/components/dashboard/payments/payments-table";
 export default async function PaymentsPage() {
   const supabase = createSupabaseAdminClient();
 
-  const [{ data: members, error: membersError }, { data: payments }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id, full_name, email, role")
-      .order("full_name", { ascending: true }),
+  const [{ data: members, error: membersError }, { data: payments, error: paymentsError }] =
+    await Promise.all([
+      supabase
+        .from("users")
+        .select("id, full_name, email, role")
+        .order("full_name", { ascending: true }),
 
-    supabase
-      .from("payments")
-      .select(`
-        id,
-        user_id,
-        payment_period,
-        payment_type,
-        payment_method,
-        amount,
-        productive_amount,
-        social_amount,
-        operational_amount,
-        paid_at,
-        notes,
-        created_at,
-        profiles:user_id (
-          full_name
-        )
-      `)
-      .order("created_at", { ascending: false }),
-  ]);
+      supabase
+        .from("payments")
+        .select(`
+          id,
+          user_id,
+          payment_period,
+          payment_type,
+          payment_method,
+          amount,
+          productive_amount,
+          social_amount,
+          operational_amount,
+          paid_at,
+          notes,
+          created_at,
+          users:user_id (
+            full_name,
+            email
+          )
+        `)
+        .order("created_at", { ascending: false }),
+    ]);
 
   const memberOptions = (members || []).map((item: any) => ({
     id: item.id,
@@ -41,7 +43,7 @@ export default async function PaymentsPage() {
   const rows = (payments || []).map((item: any) => ({
     id: item.id,
     user_id: item.user_id,
-    member_name: item.profiles?.full_name || "Tanpa Nama",
+    member_name: item.users?.full_name || item.users?.email || "Tanpa Nama",
     payment_period: item.payment_period,
     payment_type: item.payment_type,
     payment_method: item.payment_method,
@@ -56,18 +58,17 @@ export default async function PaymentsPage() {
 
   return (
     <section className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
-        <p className="text-sm text-slate-500">Members count: {memberOptions.length}</p>
-        <p className="text-sm text-slate-500">Members error: {membersError?.message || "-"}</p>
-        <pre className="mt-4 overflow-x-auto rounded-xl bg-slate-100 p-4 text-xs text-slate-700">
-          {JSON.stringify(memberOptions.slice(0, 5), null, 2)}
-        </pre>
-      </div>
-
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-medium text-slate-500">Modul Keuangan</p>
           <h1 className="text-2xl font-semibold text-slate-900">Iuran Anggota</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Kelola pembayaran iuran wajib dan sukarela anggota.
+          </p>
+          <p className="mt-2 text-xs text-slate-400">
+            members: {memberOptions.length} | membersError: {membersError?.message || "-"} |
+            paymentsError: {paymentsError?.message || "-"}
+          </p>
         </div>
 
         <PaymentCreateDialog members={memberOptions} />
