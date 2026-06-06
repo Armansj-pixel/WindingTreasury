@@ -9,41 +9,24 @@ export default async function PaymentsPage() {
     await Promise.all([
       supabase
         .from("users")
-        .select("id, full_name, email, role")
-        .order("full_name", { ascending: true }),
+        .select("id, nama, email")
+        .order("nama", { ascending: true }),
 
       supabase
         .from("payments")
-        .select(`
-          id,
-          user_id,
-          payment_period,
-          payment_type,
-          payment_method,
-          amount,
-          productive_amount,
-          social_amount,
-          operational_amount,
-          paid_at,
-          notes,
-          created_at,
-          users:user_id (
-            full_name,
-            email
-          )
-        `)
+        .select("*")
         .order("created_at", { ascending: false }),
     ]);
 
   const memberOptions = (members || []).map((item: any) => ({
     id: item.id,
-    full_name: item.full_name || item.email || "Tanpa Nama",
+    full_name: item.nama || item.email || "Tanpa Nama",
   }));
 
   const rows = (payments || []).map((item: any) => ({
     id: item.id,
     user_id: item.user_id,
-    member_name: item.users?.full_name || item.users?.email || "Tanpa Nama",
+    member_name: item.user_id || "Tanpa Nama",
     payment_period: item.payment_period,
     payment_type: item.payment_type,
     payment_method: item.payment_method,
