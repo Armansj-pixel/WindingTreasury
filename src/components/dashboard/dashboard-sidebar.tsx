@@ -18,7 +18,7 @@ export function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-72 shrink-0 border-r border-slate-200 bg-white lg:block">
+    <aside className="w-72 shrink-0 border-r border-slate-200 bg-white">
       <div className="sticky top-0 flex h-screen flex-col">
         <div className="border-b border-slate-200 px-6 py-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
