@@ -8,8 +8,7 @@ export default async function PaymentsPage() {
   const [{ data: members }, { data: payments }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, full_name")
-      .eq("role", "MEMBER")
+      .select("id, full_name, email, role")
       .order("full_name", { ascending: true }),
 
     supabase
@@ -33,6 +32,11 @@ export default async function PaymentsPage() {
       `)
       .order("created_at", { ascending: false }),
   ]);
+
+  const memberOptions = (members || []).map((item: any) => ({
+    id: item.id,
+    full_name: item.full_name || item.email || "Tanpa Nama",
+  }));
 
   const rows = (payments || []).map((item: any) => ({
     id: item.id,
@@ -61,7 +65,7 @@ export default async function PaymentsPage() {
           </p>
         </div>
 
-        <PaymentCreateDialog members={members || []} />
+        <PaymentCreateDialog members={memberOptions} />
       </div>
 
       <PaymentsTable rows={rows} />
