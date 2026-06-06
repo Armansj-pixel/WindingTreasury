@@ -1,8 +1,16 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+type CookieToSet = {
+  name: string
+  value: string
+  options?: CookieOptions
+}
+
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,30 +20,26 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
+        setAll(cookiesToSet: CookieToSet[]) {
+          cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
-          )
+          })
         },
       },
     }
   )
 
-  // Refresh session — JANGAN dihapus
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
 
-  // Kalau belum login dan akses selain /login → redirect ke /login
   if (!user && !pathname.startsWith('/login')) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Kalau sudah login dan akses /login → redirect ke /dashboard
   if (user && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
