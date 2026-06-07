@@ -1,160 +1,218 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-type MemberOption = {
+interface Member {
   id: string;
   full_name: string;
-};
+}
 
 interface Props {
-  members: MemberOption[];
+  members: Member[];
 }
 
 export function PaymentCreateDialog({ members }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [pending, startTransition] = useTransition();
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  async function onSubmit(formData: FormData) {
-    setError("");
-    setSuccess("");
+  const [form, setForm] = useState({
+    user_id: "",
+    payment_period: "",
+    payment_type: "WAJIB",
+    payment_method: "TUNAI",
+    amount: "",
+    paid_at: new Date().toISOString().slice(0, 10),
+    notes: "",
+  });
 
-    startTransition(async () => {
-      const payload = {
-        user_id: formData.get("user_id"),
-        payment_period: formData.get("payment_period"),
-        payment_type: formData.get("payment_type"),
-        payment_method: formData.get("payment_method"),
-        amount: Number(formData.get("amount")),
-        paid_at: formData.get("paid_at"),
-        notes: formData.get("notes"),
-      };
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
 
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg(null);
+
+    const selectedMember = members.find((m) => m.id === form.user_id);
+
+    if (!selectedMember) {
+      setErrorMsg("Silakan pilih anggota terlebih dahulu.");
+      setLoading(false);
+      return;
+    }
+
+    const payload = {
+      user_id: form.user_id,
+      member_name: selectedMember.full_name,
+      payment_period: form.payment_period,
+      payment_type: form.payment_type,
+      payment_method: form.payment_method,
+      amount: Number(form.amount),
+      paid_at: form.paid_at,
+      notes: form.notes,
+    };
+
+    console.log("PAYMENT_SUBMIT_PAYLOAD", payload);
+
+    try {
       const res = await fetch("/api/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
+      const result = await res.json();
 
       if (!res.ok) {
-        setError(json.message || "Gagal menambahkan iuran.");
-        return;
+        throw new Error(
+          result?.error || result?.details || result?.message || "Gagal menyimpan iuran."
+        );
       }
 
-      setSuccess("Iuran berhasil ditambahkan.");
-      setTimeout(() => {
-        window.location.reload();
-      }, 700);
-    });
+      setOpen(false);
+      setForm({
+        user_id: "",
+        payment_period: "",
+        payment_type: "WAJIB",
+        payment_method: "TUNAI",
+        amount: "",
+        paid_at: new Date().toISOString().slice(0, 10),
+        notes: "",
+      });
+      router.refresh();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Gagal menyimpan iuran.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+        className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
       >
-        Tambah Iuran
+        + Tambah Iuran
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
-          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="mb-5 flex items-start justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-start justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">Tambah Iuran</h3>
-                <p className="text-sm text-slate-500">
-                  Input pembayaran iuran anggota.
-                </p>
+                <h2 className="text-lg font-semibold text-slate-900">Tambah Iuran</h2>
+                <p className="text-sm text-slate-500">Input pembayaran iuran anggota.</p>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100"
+                className="text-slate-400 hover:text-slate-700"
               >
                 ✕
               </button>
             </div>
 
-            <form action={onSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+
+              {/* Anggota */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Anggota
                 </label>
                 <select
                   name="user_id"
+                  value={form.user_id}
+                  onChange={handleChange}
                   required
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-slate-900"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                 >
                   <option value="">Pilih anggota</option>
-                  {members.map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {member.full_name}
+                  {members.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.full_name}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Periode
-                  </label>
-                  <input
-                    type="month"
-                    name="payment_period"
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-slate-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Tanggal Bayar
-                  </label>
-                  <input
-                    type="date"
-                    name="paid_at"
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-slate-900"
-                  />
-                </div>
+              {/* Periode / Bulan */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Periode (Bulan)
+                </label>
+                <select
+                  name="payment_period"
+                  value={form.payment_period}
+                  onChange={handleChange}
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                >
+                  <option value="">Pilih bulan</option>
+                  {[
+                    "Januari","Februari","Maret","April","Mei","Juni",
+                    "Juli","Agustus","September","Oktober","November","Desember",
+                  ].map((b) => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Jenis Iuran
-                  </label>
-                  <select
-                    name="payment_type"
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-slate-900"
-                  >
-                    <option value="WAJIB">Wajib</option>
-                    <option value="SUKARELA">Sukarela</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Metode
-                  </label>
-                  <select
-                    name="payment_method"
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-slate-900"
-                  >
-                    <option value="CASH">Cash</option>
-                    <option value="TRANSFER">Transfer</option>
-                    <option value="EWALLET">E-Wallet</option>
-                  </select>
-                </div>
+              {/* Tanggal Bayar */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Tanggal Bayar
+                </label>
+                <input
+                  type="date"
+                  name="paid_at"
+                  value={form.paid_at}
+                  onChange={handleChange}
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                />
               </div>
 
+              {/* Jenis Iuran */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Jenis Iuran
+                </label>
+                <select
+                  name="payment_type"
+                  value={form.payment_type}
+                  onChange={handleChange}
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                >
+                  <option value="WAJIB">Wajib</option>
+                  <option value="SUKARELA">Sukarela</option>
+                </select>
+              </div>
+
+              {/* Metode */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Metode
+                </label>
+                <select
+                  name="payment_method"
+                  value={form.payment_method}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                >
+                  <option value="TUNAI">Cash</option>
+                  <option value="TRANSFER">Transfer</option>
+                  <option value="EWALLET">E-Wallet</option>
+                </select>
+              </div>
+
+              {/* Nominal */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Nominal
@@ -162,51 +220,52 @@ export function PaymentCreateDialog({ members }: Props) {
                 <input
                   type="number"
                   name="amount"
-                  min="0"
+                  value={form.amount}
+                  onChange={handleChange}
                   required
+                  min={1}
                   placeholder="50000"
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-slate-900"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                 />
               </div>
 
+              {/* Catatan */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Catatan
                 </label>
                 <textarea
                   name="notes"
+                  value={form.notes}
+                  onChange={handleChange}
                   rows={3}
                   placeholder="Opsional"
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-slate-900"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                 />
               </div>
 
-              {error ? (
-                <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                  {error}
+              {/* Error */}
+              {errorMsg && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {errorMsg}
                 </div>
-              ) : null}
+              )}
 
-              {success ? (
-                <div className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {success}
-                </div>
-              ) : null}
-
+              {/* Actions */}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  disabled={pending}
-                  className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                  disabled={loading}
+                  className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
                 >
-                  {pending ? "Menyimpan..." : "Simpan"}
+                  {loading ? "Menyimpan..." : "Simpan"}
                 </button>
               </div>
             </form>
