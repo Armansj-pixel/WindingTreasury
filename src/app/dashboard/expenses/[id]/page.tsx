@@ -59,6 +59,15 @@ export default async function ExpenseDetailPage({
     notFound();
   }
 
+  const code = expense.expense_code || expense.exp_code;
+  const title = expense.title || expense.deskripsi;
+  const category = expense.category || expense.kategori;
+  const date = expense.expense_date || expense.tgl;
+  const paymentMethod = expense.payment_method || expense.pos;
+  const amount = expense.amount ?? expense.nominal;
+  const notes = expense.notes || expense.catatan;
+  const status = expense.status || "PAID";
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-3">
@@ -73,15 +82,13 @@ export default async function ExpenseDetailPage({
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-sm font-medium text-slate-500">Detail Pengeluaran</p>
-              <h1 className="text-2xl font-semibold text-slate-900">
-                {expense.expense_code}
-              </h1>
+              <h1 className="text-2xl font-semibold text-slate-900">{code}</h1>
               <p className="mt-1 text-sm text-slate-500">
                 Informasi lengkap transaksi pengeluaran koperasi.
               </p>
             </div>
 
-            <span className={getStatusBadge(expense.status)}>{expense.status}</span>
+            <span className={getStatusBadge(status)}>{status}</span>
           </div>
         </div>
       </div>
@@ -89,27 +96,27 @@ export default async function ExpenseDetailPage({
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-500">Judul</p>
-          <p className="mt-3 text-lg font-semibold text-slate-900">{expense.title}</p>
+          <p className="mt-3 text-lg font-semibold text-slate-900">{title || "-"}</p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-500">Kategori</p>
           <p className="mt-3 text-lg font-semibold text-slate-900">
-            {expense.category || "-"}
+            {category || "-"}
           </p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-500">Tanggal</p>
           <p className="mt-3 text-lg font-semibold text-slate-900">
-            {formatDate(expense.expense_date)}
+            {formatDate(date)}
           </p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-500">Metode</p>
           <p className="mt-3 text-lg font-semibold text-slate-900">
-            {expense.payment_method || "-"}
+            {paymentMethod || "-"}
           </p>
         </div>
       </div>
@@ -122,21 +129,21 @@ export default async function ExpenseDetailPage({
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs text-slate-500">Kode Pengeluaran</p>
               <p className="mt-1 text-base font-semibold text-slate-900">
-                {expense.expense_code}
+                {code || "-"}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs text-slate-500">Jumlah</p>
               <p className="mt-1 text-base font-semibold text-rose-700">
-                {formatCurrency(expense.amount)}
+                {formatCurrency(amount)}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs text-slate-500">Status</p>
               <div className="mt-2">
-                <span className={getStatusBadge(expense.status)}>{expense.status}</span>
+                <span className={getStatusBadge(status)}>{status}</span>
               </div>
             </div>
 
@@ -150,7 +157,7 @@ export default async function ExpenseDetailPage({
 
           <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-xs text-slate-500">Catatan</p>
-            <p className="mt-1 text-sm text-slate-700">{expense.notes || "-"}</p>
+            <p className="mt-1 text-sm text-slate-700">{notes || "-"}</p>
           </div>
         </div>
 
@@ -161,21 +168,21 @@ export default async function ExpenseDetailPage({
             <div className="rounded-xl border border-slate-200 bg-rose-50 p-4">
               <p className="text-xs text-rose-600">Nominal Pengeluaran</p>
               <p className="mt-1 text-lg font-semibold text-rose-700">
-                {formatCurrency(expense.amount)}
+                {formatCurrency(amount)}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs text-slate-500">Kategori</p>
               <p className="mt-1 text-lg font-semibold text-slate-900">
-                {expense.category || "-"}
+                {category || "-"}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs text-slate-500">Metode Pembayaran</p>
               <p className="mt-1 text-lg font-semibold text-slate-900">
-                {expense.payment_method || "-"}
+                {paymentMethod || "-"}
               </p>
             </div>
           </div>
