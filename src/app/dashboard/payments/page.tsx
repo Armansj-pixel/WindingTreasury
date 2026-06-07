@@ -2,6 +2,8 @@ import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { PaymentCreateDialog } from "@/components/dashboard/payments/payment-create-dialog";
 import { PaymentsTable } from "@/components/dashboard/payments/payments-table";
 
+export const dynamic = "force-dynamic";
+
 export default async function PaymentsPage() {
   const supabase = createSupabaseAdminClient();
 
@@ -27,7 +29,13 @@ export default async function PaymentsPage() {
         split_sosial,
         split_ops,
         catatan,
-        created_at
+        created_at,
+        amount,
+        payment_period,
+        payment_type,
+        payment_method,
+        paid_at,
+        notes
       `)
       .order("created_at", { ascending: false }),
   ]);
@@ -39,19 +47,19 @@ export default async function PaymentsPage() {
 
   const rows = (payments || []).map((item: any) => ({
     id: item.id,
-    payment_code: item.payment_code,
+    payment_code: item.payment_code || "-",
     user_id: item.user_id,
     member_name: item.nama || "Tanpa Nama",
-    payment_period: item.bulan,
-    payment_type: item.jenis,
-    payment_method: item.metode,
-    amount: item.nominal,
-    productive_amount: item.split_produktif,
-    social_amount: item.split_sosial,
-    operational_amount: item.split_ops,
-    paid_at: item.tgl_bayar,
-    notes: item.catatan,
-    created_at: item.created_at,
+    payment_period: item.bulan || item.payment_period || "-",
+    payment_type: item.jenis || item.payment_type || "-",
+    payment_method: item.metode || item.payment_method || "-",
+    amount: item.nominal ?? item.amount ?? 0,
+    productive_amount: item.split_produktif ?? 0,
+    social_amount: item.split_sosial ?? 0,
+    operational_amount: item.split_ops ?? 0,
+    paid_at: item.tgl_bayar || item.paid_at || null,
+    notes: item.catatan || item.notes || null,
+    created_at: item.created_at || null,
   }));
 
   return (
