@@ -8,6 +8,7 @@ const items = [
   { label: "Anggota", href: "/dashboard/users" },
   { label: "Iuran", href: "/dashboard/payments" },
   { label: "Pembiayaan", href: "/dashboard/financing" },
+  { label: "Pembayaran Pinjaman", href: "/dashboard/financing-payments" },
   { label: "Pengeluaran", href: "/dashboard/expenses" },
   { label: "Simpanan", href: "/dashboard/savings" },
   { label: "Winding Kiosk", href: "/dashboard/kiosk" },
@@ -29,7 +30,7 @@ export function DashboardSidebar() {
           </h2>
         </div>
 
-        <nav className="flex-1 space-y-1 px-4 py-4">
+        <nav className="flex-1 space-y-1 px-4 py-4 overflow-y-auto">
           {items.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
