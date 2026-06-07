@@ -30,9 +30,14 @@ function getStatusBadge(status?: string | null) {
 export default async function FinancingPage() {
   const supabase = createSupabaseAdminClient();
 
-  const [{ data: financing, error }, { data: paymentRows }] = await Promise.all([
+  const [
+    { data: financing, error },
+    { data: paymentRows },
+    { data: members },
+  ] = await Promise.all([
     supabase.from("financing").select("*").order("created_at", { ascending: false }),
     supabase.from("financing_payments").select("financing_id, amount_paid"),
+    supabase.from("users").select("id, full_name").order("full_name", { ascending: true }),
   ]);
 
   const paymentMap = new Map<string, number>();
@@ -86,7 +91,7 @@ export default async function FinancingPage() {
             </p>
           </div>
 
-          <FinancingCreateDialog members={[]} />
+          <FinancingCreateDialog members={members || []} />
         </div>
       </div>
 
@@ -157,10 +162,10 @@ export default async function FinancingPage() {
                     <td className="px-4 py-3 font-medium text-slate-900">
                       {formatCurrency(row.total_amount)}
                     </td>
-                    <td className="px-4 py-3 text-emerald-700 font-medium">
+                    <td className="px-4 py-3 font-medium text-emerald-700">
                       {formatCurrency(row.total_paid)}
                     </td>
-                    <td className="px-4 py-3 text-amber-700 font-medium">
+                    <td className="px-4 py-3 font-medium text-amber-700">
                       {formatCurrency(row.remaining_amount)}
                     </td>
                     <td className="px-4 py-3">{row.tenor_months} bulan</td>
