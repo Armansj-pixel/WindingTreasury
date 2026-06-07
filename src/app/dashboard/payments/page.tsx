@@ -5,18 +5,32 @@ import { PaymentsTable } from "@/components/dashboard/payments/payments-table";
 export default async function PaymentsPage() {
   const supabase = createSupabaseAdminClient();
 
-  const [{ data: members, error: membersError }, { data: payments, error: paymentsError }] =
-    await Promise.all([
-      supabase
-        .from("users")
-        .select("id, nama, email")
-        .order("nama", { ascending: true }),
+  const [{ data: members }, { data: payments, error: paymentsError }] = await Promise.all([
+    supabase
+      .from("users")
+      .select("id, nama, email")
+      .order("nama", { ascending: true }),
 
-      supabase
-        .from("payments")
-        .select("*")
-        .order("created_at", { ascending: false }),
-    ]);
+    supabase
+      .from("payments")
+      .select(`
+        id,
+        payment_code,
+        user_id,
+        nama,
+        bulan,
+        tgl_bayar,
+        nominal,
+        jenis,
+        metode,
+        split_produktif,
+        split_sosial,
+        split_ops,
+        catatan,
+        created_at
+      `)
+      .order("created_at", { ascending: false }),
+  ]);
 
   const memberOptions = (members || []).map((item: any) => ({
     id: item.id,
@@ -25,17 +39,18 @@ export default async function PaymentsPage() {
 
   const rows = (payments || []).map((item: any) => ({
     id: item.id,
+    payment_code: item.payment_code,
     user_id: item.user_id,
-    member_name: item.user_id || "Tanpa Nama",
-    payment_period: item.payment_period,
-    payment_type: item.payment_type,
-    payment_method: item.payment_method,
-    amount: item.amount,
-    productive_amount: item.productive_amount,
-    social_amount: item.social_amount,
-    operational_amount: item.operational_amount,
-    paid_at: item.paid_at,
-    notes: item.notes,
+    member_name: item.nama || "Tanpa Nama",
+    payment_period: item.bulan,
+    payment_type: item.jenis,
+    payment_method: item.metode,
+    amount: item.nominal,
+    productive_amount: item.split_produktif,
+    social_amount: item.split_sosial,
+    operational_amount: item.split_ops,
+    paid_at: item.tgl_bayar,
+    notes: item.catatan,
     created_at: item.created_at,
   }));
 
@@ -49,8 +64,7 @@ export default async function PaymentsPage() {
             Kelola pembayaran iuran wajib dan sukarela anggota.
           </p>
           <p className="mt-2 text-xs text-slate-400">
-            members: {memberOptions.length} | membersError: {membersError?.message || "-"} |
-            paymentsError: {paymentsError?.message || "-"}
+            total data: {rows.length} | paymentsError: {paymentsError?.message || "-"}
           </p>
         </div>
 
