@@ -246,33 +246,54 @@ export default async function FinancingDetailPage({
             Belum ada pembayaran untuk pembiayaan ini.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-50 text-left text-slate-500">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Kode Bayar</th>
-                  <th className="px-4 py-3 font-medium">Angsuran Ke</th>
-                  <th className="px-4 py-3 font-medium">Tanggal</th>
-                  <th className="px-4 py-3 font-medium">Jumlah</th>
-                  <th className="px-4 py-3 font-medium">Metode</th>
-                  <th className="px-4 py-3 font-medium">Catatan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {payments.map((row: any) => (
-                  <tr key={row.id}>
-                    <td className="px-4 py-3">{row.payment_code}</td>
-                    <td className="px-4 py-3">{row.installment_number}</td>
-                    <td className="px-4 py-3">{formatDate(row.payment_date)}</td>
-                    <td className="px-4 py-3 font-medium text-slate-900">
+          <div className="space-y-4 p-4 sm:p-6">
+            {payments.map((row: any) => (
+              <div
+                key={row.id}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              >
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {row.payment_code}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Angsuran ke-{row.installment_number}
+                    </p>
+                  </div>
+
+                  <div className="text-left md:text-right">
+                    <p className="text-xs text-slate-500">Jumlah Pembayaran</p>
+                    <p className="text-base font-semibold text-emerald-700">
                       {formatCurrency(row.amount_paid)}
-                    </td>
-                    <td className="px-4 py-3">{row.payment_method || "-"}</td>
-                    <td className="px-4 py-3">{row.notes || "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <p className="text-xs text-slate-500">Tanggal</p>
+                    <p className="mt-1 text-sm font-medium text-slate-900">
+                      {formatDate(row.payment_date)}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <p className="text-xs text-slate-500">Metode</p>
+                    <p className="mt-1 text-sm font-medium text-slate-900">
+                      {row.payment_method || "-"}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white p-3 sm:col-span-2 xl:col-span-2">
+                    <p className="text-xs text-slate-500">Catatan</p>
+                    <p className="mt-1 text-sm font-medium text-slate-900">
+                      {row.notes || "-"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
