@@ -12,13 +12,25 @@ function generatePaymentCode() {
   return `PAY-${y}${m}${d}-${h}${i}${s}`;
 }
 
+function calculateSplit(nominal: number) {
+  const produktif = Math.round(nominal * 0.5);
+  const sosial = Math.round(nominal * 0.3);
+  const ops = nominal - produktif - sosial;
+
+  return {
+    split_produktif: produktif,
+    split_sosial: sosial,
+    split_ops: ops,
+  };
+}
+
 export async function GET() {
   const supabase = createSupabaseAdminClient();
 
   const { data, error } = await supabase
     .from("payments")
     .select("*")
-    .order("id", { ascending: false });
+    .order("created_at", { ascending: false });
 
   if (error) {
     return NextResponse.json(
@@ -33,20 +45,57 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { user_id } = body;
 
-    if (!user_id) {
+    const {
+      user_id,
+      member_name,
+      payment_period,
+      payment_type,
+      payment_method,
+      amount,
+      paid_at,
+      notes,
+    } = body;
+
+    if (!user_id || !member_name || !payment_period || !payment_type || !amount) {
       return NextResponse.json(
-        { message: "Anggota belum dipilih." },
+        { message: "Data iuran belum lengkap." },
         { status: 400 }
       );
     }
 
+    const nominal = Number(amount);
+
+    if (Number.isNaN(nominal) || nominal <= 0) {
+      return NextResponse.json(
+        { message: "Nominal iuran tidak valid." },
+        { status: 400 }
+      );
+    }
+
+    const split = calculateSplit(nominal);
     const supabase = createSupabaseAdminClient();
 
     const payload = {
-      user_id,
       payment_code: generatePaymentCode(),
+      user_id,
+      nama: member_name,
+      bulan: payment_period,
+      tgl_bayar: paid_at || new Date().toISOString().slice(0, 10),
+      nominal,
+      jenis: payment_type,
+      metode: payment_method || "TUNAI",
+      split_produktif: split.split_produktif,
+      split_sosial: split.split_sosial,
+      split_ops: split.split_ops,
+      catatan: notes || null,
+
+      amount: nominal,
+      payment_period,
+      payment_type,
+      payment_method: payment_method || "TUNAI",
+      paid_at: paid_at || new Date().toISOString().slice(0, 10),
+      notes: notes || null,
     };
 
     const { error } = await supabase.from("payments").insert(payload);
