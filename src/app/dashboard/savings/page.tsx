@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { SavingsCreateDialog } from "@/components/dashboard/savings/savings-create-dialog";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,11 @@ export default async function SavingsPage() {
     supabase.from("savings").select("*").order("created_at", { ascending: false }),
   ]);
 
+  const members = (users || []).map((item: any) => ({
+    id: item.id,
+    full_name: item.nama || item.email || "Tanpa Nama",
+  }));
+
   const totalSavings = (savings || []).reduce((sum: number, item: any) => {
     return sum + Number(item.nominal ?? 0);
   }, 0);
@@ -39,7 +45,7 @@ export default async function SavingsPage() {
   return (
     <section className="space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-medium text-slate-500">Modul Simpanan</p>
             <h1 className="text-2xl font-semibold text-slate-900">Simpanan Anggota</h1>
@@ -47,6 +53,8 @@ export default async function SavingsPage() {
               Pencatatan simpanan Wadiah dan Mudharabah.
             </p>
           </div>
+
+          <SavingsCreateDialog members={members} />
         </div>
       </div>
 
@@ -99,6 +107,8 @@ export default async function SavingsPage() {
                   <th className="px-4 py-3 font-medium">Jenis</th>
                   <th className="px-4 py-3 font-medium">Nominal</th>
                   <th className="px-4 py-3 font-medium">Tanggal Setor</th>
+                  <th className="px-4 py-3 font-medium">Lock</th>
+                  <th className="px-4 py-3 font-medium">Jatuh Tempo</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Catatan</th>
                 </tr>
@@ -111,6 +121,10 @@ export default async function SavingsPage() {
                     <td className="px-4 py-3">{row.jenis_simpanan}</td>
                     <td className="px-4 py-3">{formatCurrency(row.nominal)}</td>
                     <td className="px-4 py-3">{formatDate(row.tanggal_setor)}</td>
+                    <td className="px-4 py-3">
+                      {row.is_locked ? `${row.lock_months || 0} bulan` : "-"}
+                    </td>
+                    <td className="px-4 py-3">{formatDate(row.maturity_date)}</td>
                     <td className="px-4 py-3">{row.status}</td>
                     <td className="px-4 py-3">{row.catatan || "-"}</td>
                   </tr>
