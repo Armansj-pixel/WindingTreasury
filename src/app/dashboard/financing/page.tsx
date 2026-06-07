@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { FinancingCreateDialog } from "@/components/dashboard/financing/financing-create-dialog";
 
@@ -136,7 +137,7 @@ export default async function FinancingPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-[1200px] text-sm">
+            <table className="min-w-[1320px] text-sm">
               <thead className="bg-slate-50 text-left text-slate-500">
                 <tr>
                   <th className="px-4 py-3 font-medium">Kode</th>
@@ -149,6 +150,7 @@ export default async function FinancingPage() {
                   <th className="px-4 py-3 font-medium">Sisa</th>
                   <th className="px-4 py-3 font-medium">Tenor</th>
                   <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -173,6 +175,14 @@ export default async function FinancingPage() {
                       <span className={getStatusBadge(row.computed_status)}>
                         {row.computed_status}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/dashboard/financing/${row.id}`}
+                        className="inline-flex rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        Detail
+                      </Link>
                     </td>
                   </tr>
                 ))}
