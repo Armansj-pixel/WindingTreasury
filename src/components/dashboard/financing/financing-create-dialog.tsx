@@ -30,7 +30,7 @@ export function FinancingCreateDialog({ members }: Props) {
 
   const [form, setForm] = useState({
     user_id: "",
-    akad: "MURABAHAH",
+    akad: "QARDH",
     principal_amount: "",
     margin_amount: "",
     tenor_months: "12",
@@ -39,9 +39,13 @@ export function FinancingCreateDialog({ members }: Props) {
     notes: "",
   });
 
+  const isQardh = form.akad === "QARDH";
+  const principalAmount = Number(form.principal_amount || 0);
+  const marginAmount = isQardh ? 0 : Number(form.margin_amount || 0);
+
   const totalAmount = useMemo(() => {
-    return Number(form.principal_amount || 0) + Number(form.margin_amount || 0);
-  }, [form.principal_amount, form.margin_amount]);
+    return principalAmount + marginAmount;
+  }, [principalAmount, marginAmount]);
 
   const monthlyInstallment = useMemo(() => {
     const tenor = Number(form.tenor_months || 0);
@@ -60,6 +64,7 @@ export function FinancingCreateDialog({ members }: Props) {
     setForm((prev) => ({
       ...prev,
       [name]: value,
+      ...(name === "akad" && value === "QARDH" ? { margin_amount: "" } : {}),
     }));
   }
 
@@ -76,8 +81,8 @@ export function FinancingCreateDialog({ members }: Props) {
       return;
     }
 
-    if (!form.principal_amount || Number(form.principal_amount) <= 0) {
-      setErrorMsg("Pokok pembiayaan wajib diisi.");
+    if (!form.principal_amount || principalAmount <= 0) {
+      setErrorMsg(isQardh ? "Nominal pinjaman wajib diisi." : "Pokok pembiayaan wajib diisi.");
       setLoading(false);
       return;
     }
@@ -88,15 +93,22 @@ export function FinancingCreateDialog({ members }: Props) {
       return;
     }
 
+    if (!isQardh && marginAmount < 0) {
+      setErrorMsg("Margin tidak valid.");
+      setLoading(false);
+      return;
+    }
+
+    const tenor = Number(form.tenor_months);
     const payload = {
       user_id: form.user_id,
       nama: selectedMember.full_name,
       akad: form.akad,
-      principal_amount: Number(form.principal_amount),
-      margin_amount: Number(form.margin_amount || 0),
+      principal_amount: principalAmount,
+      margin_amount: marginAmount,
       total_amount: totalAmount,
-      tenor_months: Number(form.tenor_months),
-      monthly_installment: monthlyInstallment,
+      tenor_months: tenor,
+      monthly_installment: tenor > 0 ? totalAmount / tenor : 0,
       start_date: form.start_date,
       due_date: dueDate,
       purpose: form.purpose,
@@ -132,7 +144,7 @@ export function FinancingCreateDialog({ members }: Props) {
       setOpen(false);
       setForm({
         user_id: "",
-        akad: "MURABAHAH",
+        akad: "QARDH",
         principal_amount: "",
         margin_amount: "",
         tenor_months: "12",
@@ -169,7 +181,7 @@ export function FinancingCreateDialog({ members }: Props) {
                     Tambah Pembiayaan
                   </h2>
                   <p className="text-sm text-slate-500">
-                    Input pembiayaan anggota dengan akad dan tenor.
+                    Input pembiayaan anggota dengan akad Qardh atau Murabahah.
                   </p>
                 </div>
 
@@ -205,7 +217,7 @@ export function FinancingCreateDialog({ members }: Props) {
                       </select>
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className={`grid gap-4 ${isQardh ? "md:grid-cols-1" : "md:grid-cols-2"}`}>
                       <div>
                         <label className="mb-1 block text-sm font-medium text-slate-700">
                           Akad
@@ -216,11 +228,44 @@ export function FinancingCreateDialog({ members }: Props) {
                           onChange={handleChange}
                           className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
                         >
-                          <option value="MURABAHAH">Murabahah</option>
-                          <option value="MUDHARABAH">Mudharabah</option>
                           <option value="QARDH">Qardh</option>
-                          <option value="IJARAH">Ijarah</option>
+                          <option value="MURABAHAH">Murabahah</option>
                         </select>
+                      </div>
+
+                      {!isQardh ? (
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-slate-700">
+                            Margin
+                          </label>
+                          <input
+                            type="number"
+                            name="margin_amount"
+                            value={form.margin_amount}
+                            onChange={handleChange}
+                            min={0}
+                            placeholder="1000000"
+                            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-slate-700">
+                          {isQardh ? "Nominal Pinjaman" : "Pokok Pembiayaan"}
+                        </label>
+                        <input
+                          type="number"
+                          name="principal_amount"
+                          value={form.principal_amount}
+                          onChange={handleChange}
+                          min={1}
+                          required
+                          placeholder={isQardh ? "5000000" : "10000000"}
+                          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                        />
                       </div>
 
                       <div>
@@ -234,39 +279,6 @@ export function FinancingCreateDialog({ members }: Props) {
                           onChange={handleChange}
                           min={1}
                           required
-                          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-slate-700">
-                          Pokok Pembiayaan
-                        </label>
-                        <input
-                          type="number"
-                          name="principal_amount"
-                          value={form.principal_amount}
-                          onChange={handleChange}
-                          min={1}
-                          required
-                          placeholder="10000000"
-                          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-slate-700">
-                          Margin
-                        </label>
-                        <input
-                          type="number"
-                          name="margin_amount"
-                          value={form.margin_amount}
-                          onChange={handleChange}
-                          min={0}
-                          placeholder="1000000"
                           className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
                         />
                       </div>
@@ -287,22 +299,24 @@ export function FinancingCreateDialog({ members }: Props) {
 
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                       <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                        <p className="text-xs text-slate-500">Total Pembiayaan</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-900 break-words">
+                        <p className="text-xs text-slate-500">
+                          {isQardh ? "Total Pinjaman" : "Total Pembiayaan"}
+                        </p>
+                        <p className="mt-1 break-words text-sm font-semibold text-slate-900">
                           Rp {Math.round(totalAmount).toLocaleString("id-ID")}
                         </p>
                       </div>
 
                       <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                         <p className="text-xs text-slate-500">Angsuran / Bulan</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-900 break-words">
+                        <p className="mt-1 break-words text-sm font-semibold text-slate-900">
                           Rp {Math.round(monthlyInstallment).toLocaleString("id-ID")}
                         </p>
                       </div>
 
                       <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:col-span-2 xl:col-span-1">
                         <p className="text-xs text-slate-500">Jatuh Tempo</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-900 break-words">
+                        <p className="mt-1 break-words text-sm font-semibold text-slate-900">
                           {dueDate || "-"}
                         </p>
                       </div>
@@ -317,7 +331,7 @@ export function FinancingCreateDialog({ members }: Props) {
                         name="purpose"
                         value={form.purpose}
                         onChange={handleChange}
-                        placeholder="Modal usaha, pendidikan, kebutuhan darurat, dll"
+                        placeholder="Modal usaha, kebutuhan darurat, pembelian barang, dll"
                         className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
                       />
                     </div>
