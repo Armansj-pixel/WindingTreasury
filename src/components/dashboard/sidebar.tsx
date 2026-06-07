@@ -1,9 +1,16 @@
-import Link from 'next/link'
+import Link from "next/link";
 
 const menus = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/dashboard/users', label: 'Anggota' },
-]
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/users", label: "Anggota" },
+  { href: "/dashboard/payments", label: "Iuran" },
+  { href: "/dashboard/financing", label: "Pembiayaan" },
+  { href: "/dashboard/financing-payments", label: "Pembayaran Pinjaman" },
+  { href: "/dashboard/expenses", label: "Pengeluaran" },
+  { href: "/dashboard/savings", label: "Simpanan" },
+  { href: "/dashboard/kiosk", label: "Winding Kiosk" },
+  { href: "/dashboard/sla", label: "SLA Queue" },
+];
 
 export default function Sidebar() {
   return (
@@ -25,5 +32,5 @@ export default function Sidebar() {
         ))}
       </nav>
     </div>
-  )
+  );
 }
