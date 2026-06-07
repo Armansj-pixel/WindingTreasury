@@ -63,35 +63,45 @@ export default async function ExpensesPage({
     .from("expenses")
     .select("*")
     .order("expense_date", { ascending: false })
+    .order("tgl", { ascending: false })
     .order("created_at", { ascending: false });
 
   const rows = (expenses || []).filter((item: any) => {
+    const code = item.expense_code || item.exp_code || "";
+    const title = item.title || item.deskripsi || "";
+    const status = item.status || "PAID";
+    const category = item.category || item.kategori || "";
+
     const matchesQuery =
       !q ||
-      String(item.title || "").toLowerCase().includes(q) ||
-      String(item.expense_code || "").toLowerCase().includes(q);
+      String(title).toLowerCase().includes(q) ||
+      String(code).toLowerCase().includes(q);
 
     const matchesStatus =
       statusFilter === "ALL" ||
-      String(item.status || "").toUpperCase() === statusFilter;
+      String(status).toUpperCase() === statusFilter;
 
     const matchesCategory =
       categoryFilter === "all" ||
-      String(item.category || "").toLowerCase() === categoryFilter;
+      String(category).toLowerCase() === categoryFilter;
 
     return matchesQuery && matchesStatus && matchesCategory;
   });
 
   const totalExpense = rows.reduce((sum: number, item: any) => {
-    return sum + Number(item.amount ?? 0);
+    return sum + Number(item.amount ?? item.nominal ?? 0);
   }, 0);
 
   const paidCount = rows.filter(
-    (item: any) => String(item.status || "").toUpperCase() === "PAID"
+    (item: any) => String(item.status || "PAID").toUpperCase() === "PAID"
   ).length;
 
   const categories = Array.from(
-    new Set((expenses || []).map((item: any) => item.category).filter(Boolean))
+    new Set(
+      (expenses || [])
+        .map((item: any) => item.category || item.kategori)
+        .filter(Boolean)
+    )
   );
 
   return (
@@ -100,7 +110,9 @@ export default async function ExpensesPage({
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-medium text-slate-500">Modul Pengeluaran</p>
-            <h1 className="text-2xl font-semibold text-slate-900">Pengeluaran Koperasi</h1>
+            <h1 className="text-2xl font-semibold text-slate-900">
+              Pengeluaran Koperasi
+            </h1>
             <p className="mt-1 text-sm text-slate-500">
               Kelola seluruh pengeluaran operasional dan transaksi kas keluar.
             </p>
@@ -131,7 +143,9 @@ export default async function ExpensesPage({
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">Daftar Pengeluaran</h2>
+          <h2 className="text-base font-semibold text-slate-900">
+            Daftar Pengeluaran
+          </h2>
           <p className="text-sm text-slate-500">
             Pencatatan seluruh transaksi pengeluaran koperasi.
           </p>
@@ -206,18 +220,24 @@ export default async function ExpensesPage({
               <tbody className="divide-y divide-slate-200">
                 {rows.map((row: any) => (
                   <tr key={row.id}>
-                    <td className="px-4 py-3">{row.expense_code}</td>
+                    <td className="px-4 py-3">{row.expense_code || row.exp_code}</td>
                     <td className="px-4 py-3 font-medium text-slate-900">
-                      {row.title}
+                      {row.title || row.deskripsi}
                     </td>
-                    <td className="px-4 py-3">{row.category || "-"}</td>
-                    <td className="px-4 py-3">{formatDate(row.expense_date)}</td>
-                    <td className="px-4 py-3">{row.payment_method || "-"}</td>
-                    <td className="px-4 py-3 font-medium text-rose-700">
-                      {formatCurrency(row.amount)}
+                    <td className="px-4 py-3">{row.category || row.kategori || "-"}</td>
+                    <td className="px-4 py-3">
+                      {formatDate(row.expense_date || row.tgl)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={getStatusBadge(row.status)}>{row.status || "-"}</span>
+                      {row.payment_method || row.pos || "-"}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-rose-700">
+                      {formatCurrency(row.amount ?? row.nominal)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={getStatusBadge(row.status || "PAID")}>
+                        {row.status || "PAID"}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <Link
