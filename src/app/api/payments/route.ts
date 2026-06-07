@@ -1,13 +1,24 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 
+function generatePaymentCode() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const h = String(now.getHours()).padStart(2, "0");
+  const i = String(now.getMinutes()).padStart(2, "0");
+  const s = String(now.getSeconds()).padStart(2, "0");
+  return `PAY-${y}${m}${d}-${h}${i}${s}`;
+}
+
 export async function GET() {
   const supabase = createSupabaseAdminClient();
 
   const { data, error } = await supabase
     .from("payments")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("id", { ascending: false });
 
   if (error) {
     return NextResponse.json(
@@ -22,38 +33,23 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const { user_id } = body;
 
-    const {
-      user_id,
-      payment_period,
-      payment_type,
-      payment_method,
-      amount,
-      paid_at,
-      notes,
-    } = body;
-
-    if (!user_id || !payment_period || !payment_type || !payment_method || !amount || !paid_at) {
+    if (!user_id) {
       return NextResponse.json(
-        {
-          message: "Data iuran belum lengkap.",
-          debug: { user_id, payment_period, payment_type, payment_method, amount, paid_at },
-        },
+        { message: "Anggota belum dipilih." },
         { status: 400 }
       );
     }
 
     const supabase = createSupabaseAdminClient();
 
-    const { error } = await supabase.from("payments").insert({
+    const payload = {
       user_id,
-      payment_period,
-      payment_type,
-      payment_method,
-      amount,
-      paid_at,
-      notes: notes || null,
-    });
+      payment_code: generatePaymentCode(),
+    };
+
+    const { error } = await supabase.from("payments").insert(payload);
 
     if (error) {
       return NextResponse.json(
