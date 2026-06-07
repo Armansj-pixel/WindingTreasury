@@ -160,203 +160,211 @@ export function FinancingCreateDialog({ members }: Props) {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-start justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">
-                  Tambah Pembiayaan
-                </h2>
-                <p className="text-sm text-slate-500">
-                  Input pembiayaan anggota dengan akad dan tenor.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-slate-400 hover:text-slate-700"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Anggota
-                </label>
-                <select
-                  name="user_id"
-                  value={form.user_id}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                >
-                  <option value="">Pilih anggota</option>
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.full_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Akad
-                  </label>
-                  <select
-                    name="akad"
-                    value={form.akad}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                  >
-                    <option value="MURABAHAH">Murabahah</option>
-                    <option value="MUDHARABAH">Mudharabah</option>
-                    <option value="QARDH">Qardh</option>
-                    <option value="IJARAH">Ijarah</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Tenor (bulan)
-                  </label>
-                  <input
-                    type="number"
-                    name="tenor_months"
-                    value={form.tenor_months}
-                    onChange={handleChange}
-                    min={1}
-                    required
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Pokok Pembiayaan
-                  </label>
-                  <input
-                    type="number"
-                    name="principal_amount"
-                    value={form.principal_amount}
-                    onChange={handleChange}
-                    min={1}
-                    required
-                    placeholder="10000000"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Margin
-                  </label>
-                  <input
-                    type="number"
-                    name="margin_amount"
-                    value={form.margin_amount}
-                    onChange={handleChange}
-                    min={0}
-                    placeholder="1000000"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Tanggal Mulai
-                </label>
-                <input
-                  type="date"
-                  name="start_date"
-                  value={form.start_date}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">Total Pembiayaan</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
-                    Rp {Math.round(totalAmount).toLocaleString("id-ID")}
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50">
+          <div className="flex min-h-[100dvh] items-start justify-center p-3 sm:p-4 md:items-center">
+            <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl max-h-[calc(100dvh-24px)] sm:max-h-[calc(100dvh-32px)]">
+              <div className="flex items-start justify-between border-b border-slate-200 px-4 py-4 sm:px-6">
+                <div className="pr-4">
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Tambah Pembiayaan
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    Input pembiayaan anggota dengan akad dan tenor.
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">Angsuran / Bulan</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
-                    Rp {Math.round(monthlyInstallment).toLocaleString("id-ID")}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">Jatuh Tempo</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
-                    {dueDate || "-"}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Tujuan Pembiayaan
-                </label>
-                <input
-                  type="text"
-                  name="purpose"
-                  value={form.purpose}
-                  onChange={handleChange}
-                  placeholder="Modal usaha, pendidikan, kebutuhan darurat, dll"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Catatan
-                </label>
-                <textarea
-                  name="notes"
-                  value={form.notes}
-                  onChange={handleChange}
-                  rows={3}
-                  placeholder="Opsional"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                />
-              </div>
-
-              {errorMsg ? (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {errorMsg}
-                </div>
-              ) : null}
-
-              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                  className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                 >
-                  Batal
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-                >
-                  {loading ? "Menyimpan..." : "Simpan"}
+                  ✕
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700">
+                        Anggota
+                      </label>
+                      <select
+                        name="user_id"
+                        value={form.user_id}
+                        onChange={handleChange}
+                        required
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                      >
+                        <option value="">Pilih anggota</option>
+                        {members.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.full_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-slate-700">
+                          Akad
+                        </label>
+                        <select
+                          name="akad"
+                          value={form.akad}
+                          onChange={handleChange}
+                          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                        >
+                          <option value="MURABAHAH">Murabahah</option>
+                          <option value="MUDHARABAH">Mudharabah</option>
+                          <option value="QARDH">Qardh</option>
+                          <option value="IJARAH">Ijarah</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-slate-700">
+                          Tenor (bulan)
+                        </label>
+                        <input
+                          type="number"
+                          name="tenor_months"
+                          value={form.tenor_months}
+                          onChange={handleChange}
+                          min={1}
+                          required
+                          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-slate-700">
+                          Pokok Pembiayaan
+                        </label>
+                        <input
+                          type="number"
+                          name="principal_amount"
+                          value={form.principal_amount}
+                          onChange={handleChange}
+                          min={1}
+                          required
+                          placeholder="10000000"
+                          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-slate-700">
+                          Margin
+                        </label>
+                        <input
+                          type="number"
+                          name="margin_amount"
+                          value={form.margin_amount}
+                          onChange={handleChange}
+                          min={0}
+                          placeholder="1000000"
+                          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700">
+                        Tanggal Mulai
+                      </label>
+                      <input
+                        type="date"
+                        name="start_date"
+                        value={form.start_date}
+                        onChange={handleChange}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                      />
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Total Pembiayaan</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900 break-words">
+                          Rp {Math.round(totalAmount).toLocaleString("id-ID")}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Angsuran / Bulan</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900 break-words">
+                          Rp {Math.round(monthlyInstallment).toLocaleString("id-ID")}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:col-span-2 xl:col-span-1">
+                        <p className="text-xs text-slate-500">Jatuh Tempo</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900 break-words">
+                          {dueDate || "-"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700">
+                        Tujuan Pembiayaan
+                      </label>
+                      <input
+                        type="text"
+                        name="purpose"
+                        value={form.purpose}
+                        onChange={handleChange}
+                        placeholder="Modal usaha, pendidikan, kebutuhan darurat, dll"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700">
+                        Catatan
+                      </label>
+                      <textarea
+                        name="notes"
+                        value={form.notes}
+                        onChange={handleChange}
+                        rows={4}
+                        placeholder="Opsional"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                      />
+                    </div>
+
+                    {errorMsg ? (
+                      <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                        {errorMsg}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-4 sm:px-6">
+                  <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setOpen(false)}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 sm:w-auto"
+                    >
+                      Batal
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 sm:w-auto"
+                    >
+                      {loading ? "Menyimpan..." : "Simpan"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       ) : null}
