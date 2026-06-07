@@ -12,6 +12,23 @@ function formatCurrency(value?: number | null) {
   }).format(amount);
 }
 
+function getModuleStatus(error: any) {
+  if (!error) return "OK";
+
+  const message = String(error?.message || "").toLowerCase();
+
+  if (
+    message.includes("relation") ||
+    message.includes("does not exist") ||
+    message.includes("could not find") ||
+    message.includes("not found")
+  ) {
+    return "Belum siap";
+  }
+
+  return "Error";
+}
+
 export default async function DashboardPage() {
   const supabase = createSupabaseAdminClient();
 
@@ -94,19 +111,19 @@ export default async function DashboardPage() {
           <div className="mt-4 space-y-3 text-sm text-slate-600">
             <div className="flex items-center justify-between">
               <span>Data anggota</span>
-              <span>{membersError ? "Error" : "OK"}</span>
+              <span>{getModuleStatus(membersError)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span>Data iuran</span>
-              <span>{paymentsError ? "Error" : "OK"}</span>
+              <span>{getModuleStatus(paymentsError)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span>Data simpanan</span>
-              <span>{savingsError ? "Error" : "OK"}</span>
+              <span>{getModuleStatus(savingsError)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span>Data pembiayaan</span>
-              <span>{financingError ? "Error" : "OK"}</span>
+              <span>{getModuleStatus(financingError)}</span>
             </div>
           </div>
         </div>
