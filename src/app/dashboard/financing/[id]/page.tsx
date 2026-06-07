@@ -85,33 +85,127 @@ export default async function FinancingDetailPage({
         @media print {
           @page {
             size: A4;
-            margin: 14mm;
+            margin: 16mm 14mm 20mm 14mm;
           }
 
           html, body {
-            background: white !important;
+            background: #fff !important;
+            color: #0f172a !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
 
           .print-hide {
             display: none !important;
           }
 
+          .print-only {
+            display: block !important;
+          }
+
           .print-root {
-            padding: 0 !important;
             margin: 0 !important;
+            padding: 0 !important;
           }
 
           .print-card {
-            break-inside: avoid;
             box-shadow: none !important;
             border: 1px solid #dbe4ee !important;
-            border-radius: 16px !important;
-            background: white !important;
-          }
-
-          .print-section {
+            background: #fff !important;
             break-inside: avoid;
             page-break-inside: avoid;
+          }
+
+          .print-header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 14px;
+          }
+
+          .print-header-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+          }
+
+          .print-brand {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #334155 !important;
+          }
+
+          .print-title {
+            margin-top: 6px;
+            font-size: 24px;
+            line-height: 1.2;
+            font-weight: 700;
+            color: #0f172a !important;
+          }
+
+          .print-subtitle {
+            margin-top: 4px;
+            font-size: 12px;
+            color: #64748b !important;
+          }
+
+          .print-meta {
+            min-width: 220px;
+            border: 1px solid #dbe4ee;
+            border-radius: 12px;
+            padding: 12px;
+            background: #f8fafc !important;
+          }
+
+          .print-meta-label {
+            font-size: 11px;
+            color: #64748b !important;
+          }
+
+          .print-meta-value {
+            margin-top: 3px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a !important;
+          }
+
+          .print-grid-2 {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+          }
+
+          .print-grid-4 {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 12px;
+          }
+
+          .print-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #f8fafc !important;
+            color: #0f172a !important;
+          }
+
+          .print-bar-wrap {
+            height: 10px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #e2e8f0 !important;
+          }
+
+          .print-bar {
+            height: 100%;
+            background: #10b981 !important;
           }
 
           .print-table {
@@ -125,63 +219,46 @@ export default async function FinancingDetailPage({
             padding: 10px 12px;
             text-align: left;
             vertical-align: top;
+            font-size: 12px;
           }
 
           .print-table th {
             background: #f8fafc !important;
             color: #334155 !important;
-            font-weight: 600;
-          }
-
-          .print-muted {
-            color: #64748b !important;
-          }
-
-          .print-title {
-            font-size: 22px !important;
-            line-height: 1.2;
             font-weight: 700;
-            color: #0f172a !important;
           }
 
-          .print-subtitle {
-            font-size: 12px !important;
-            color: #64748b !important;
-          }
-
-          .print-grid-2 {
-            display: grid !important;
+          .print-signature-section {
+            margin-top: 28px;
+            display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 40px;
+            break-inside: avoid;
+            page-break-inside: avoid;
           }
 
-          .print-grid-3 {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
+          .print-signature-box {
+            min-height: 120px;
           }
 
-          .print-badge {
-            display: inline-flex;
-            border: 1px solid #cbd5e1;
-            border-radius: 999px;
-            padding: 4px 10px;
+          .print-signature-label {
+            font-size: 12px;
+            color: #475569 !important;
+          }
+
+          .print-signature-space {
+            height: 64px;
+          }
+
+          .print-signature-line {
+            border-top: 1px solid #94a3b8;
+            padding-top: 8px;
+          }
+
+          .print-footer-note {
+            margin-top: 18px;
             font-size: 11px;
-            font-weight: 700;
-            color: #0f172a !important;
-            background: #f8fafc !important;
-          }
-
-          .print-bar-wrap {
-            height: 10px;
-            border-radius: 999px;
-            background: #e2e8f0 !important;
-            overflow: hidden;
-          }
-
-          .print-bar {
-            height: 100%;
-            background: #10b981 !important;
+            color: #64748b !important;
           }
         }
       `}</style>
@@ -216,26 +293,37 @@ export default async function FinancingDetailPage({
           </div>
         </div>
 
-        <div className="print-section print-card hidden p-6 print:block">
-          <div className="flex items-start justify-between gap-4">
+        <div className="hidden print-only print-header">
+          <div className="print-header-top">
             <div>
-              <p className="print-subtitle">Winding Treasury</p>
-              <h1 className="print-title mt-1">Laporan Detail Pembiayaan</h1>
-              <p className="print-subtitle mt-2">
-                Dokumen ringkasan pembiayaan anggota beserta riwayat angsuran.
+              <p className="print-brand">Winding Treasury</p>
+              <h1 className="print-title">Laporan Detail Pembiayaan</h1>
+              <p className="print-subtitle">
+                Dokumen resmi ringkasan pembiayaan anggota, progres pelunasan,
+                dan riwayat angsuran.
               </p>
             </div>
 
-            <div className="text-right">
-              <p className="print-subtitle">Dicetak pada</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                {formatDate(new Date().toISOString())}
-              </p>
+            <div className="print-meta">
+              <div>
+                <p className="print-meta-label">Kode Pembiayaan</p>
+                <p className="print-meta-value">{financing.financing_code}</p>
+              </div>
+              <div className="mt-3">
+                <p className="print-meta-label">Nama Anggota</p>
+                <p className="print-meta-value">{financing.nama}</p>
+              </div>
+              <div className="mt-3">
+                <p className="print-meta-label">Tanggal Cetak</p>
+                <p className="print-meta-value">
+                  {formatDate(new Date().toISOString())}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="print-section grid gap-4 md:grid-cols-2 xl:grid-cols-4 print:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 print-grid-4">
           <div className="print-card rounded-2xl border border-slate-200 bg-white p-5">
             <p className="text-sm text-slate-500">Nama Anggota</p>
             <p className="mt-3 text-lg font-semibold text-slate-900">{financing.nama}</p>
@@ -257,7 +345,6 @@ export default async function FinancingDetailPage({
             <p className="text-sm text-slate-500">Status</p>
             <div className="mt-3">
               <span className="print-badge">{computedStatus}</span>
-              <span className="hidden print:inline-flex print-badge">{computedStatus}</span>
             </div>
           </div>
         </div>
@@ -374,7 +461,7 @@ export default async function FinancingDetailPage({
           </div>
         </div>
 
-        <div className="print-section print-card overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="print-card overflow-hidden rounded-2xl border border-slate-200 bg-white">
           <div className="border-b border-slate-200 px-6 py-4">
             <h2 className="text-base font-semibold text-slate-900">Riwayat Angsuran</h2>
             <p className="text-sm text-slate-500">
@@ -392,7 +479,7 @@ export default async function FinancingDetailPage({
             </div>
           ) : (
             <>
-              <div className="space-y-4 p-4 sm:p-6 print:hidden">
+              <div className="print-hide space-y-4 p-4 sm:p-6">
                 {payments.map((row: any) => (
                   <div
                     key={row.id}
@@ -443,7 +530,7 @@ export default async function FinancingDetailPage({
               </div>
 
               <div className="hidden p-6 print:block">
-                <table className="print-table text-sm">
+                <table className="print-table">
                   <thead>
                     <tr>
                       <th>No</th>
@@ -469,6 +556,38 @@ export default async function FinancingDetailPage({
                     ))}
                   </tbody>
                 </table>
+
+                <div className="print-signature-section">
+                  <div className="print-signature-box">
+                    <p className="print-signature-label">Mengetahui,</p>
+                    <div className="print-signature-space" />
+                    <div className="print-signature-line">
+                      <p className="text-sm font-semibold text-slate-900">
+                        Ketua / Pengelola
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="print-signature-box">
+                    <p className="print-signature-label">
+                      Admin,
+                      <span className="ml-1">
+                        {formatDate(new Date().toISOString())}
+                      </span>
+                    </p>
+                    <div className="print-signature-space" />
+                    <div className="print-signature-line">
+                      <p className="text-sm font-semibold text-slate-900">
+                        Admin Winding Treasury
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="print-footer-note">
+                  Dokumen ini dicetak dari sistem Winding Treasury untuk kebutuhan
+                  administrasi dan arsip pembiayaan anggota.
+                </p>
               </div>
             </>
           )}
