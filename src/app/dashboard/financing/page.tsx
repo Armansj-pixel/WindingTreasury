@@ -28,7 +28,20 @@ function getStatusBadge(status?: string | null) {
   return "inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700";
 }
 
-export default async function FinancingPage() {
+type SearchParams = {
+  q?: string;
+  status?: string;
+};
+
+export default async function FinancingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams>;
+}) {
+  const params = (await searchParams) || {};
+  const q = (params.q || "").trim().toLowerCase();
+  const statusFilter = (params.status || "ALL").toUpperCase();
+
   const supabase = createSupabaseAdminClient();
 
   const [
@@ -46,7 +59,6 @@ export default async function FinancingPage() {
   for (const row of paymentRows || []) {
     const financingId = row.financing_id;
     const amount = Number(row.amount_paid ?? 0);
-
     paymentMap.set(financingId, (paymentMap.get(financingId) || 0) + amount);
   }
 
@@ -68,6 +80,18 @@ export default async function FinancingPage() {
     };
   });
 
+  const filteredFinancing = financingWithStats.filter((item: any) => {
+    const matchesQuery =
+      !q ||
+      String(item.nama || "").toLowerCase().includes(q) ||
+      String(item.financing_code || "").toLowerCase().includes(q);
+
+    const matchesStatus =
+      statusFilter === "ALL" || item.computed_status === statusFilter;
+
+    return matchesQuery && matchesStatus;
+  });
+
   const totalFinancing = financingWithStats.reduce((sum: number, item: any) => {
     return sum + Number(item.total_amount ?? 0);
   }, 0);
@@ -79,6 +103,8 @@ export default async function FinancingPage() {
   const memberCount = new Set(
     financingWithStats.map((item: any) => item.user_id).filter(Boolean)
   ).size;
+
+  const statusOptions = ["ALL", "AKTIF", "LUNAS", "MACET"];
 
   return (
     <section className="space-y-6">
@@ -127,13 +153,44 @@ export default async function FinancingPage() {
           </p>
         </div>
 
+        <div className="border-b border-slate-200 px-6 py-4">
+          <form className="grid gap-3 md:grid-cols-[1fr_220px_120px]">
+            <input
+              type="text"
+              name="q"
+              defaultValue={params.q || ""}
+              placeholder="Cari nama anggota / kode pembiayaan"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+            />
+
+            <select
+              name="status"
+              defaultValue={statusFilter}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+            >
+              {statusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {status === "ALL" ? "Semua Status" : status}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="submit"
+              className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              Filter
+            </button>
+          </form>
+        </div>
+
         {error ? (
           <div className="px-6 py-10 text-sm text-red-600">
             Gagal memuat data pembiayaan: {error.message}
           </div>
-        ) : !financingWithStats || financingWithStats.length === 0 ? (
+        ) : !filteredFinancing || filteredFinancing.length === 0 ? (
           <div className="px-6 py-10 text-sm text-slate-500">
-            Belum ada data pembiayaan.
+            Tidak ada data pembiayaan yang cocok dengan filter.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -154,7 +211,7 @@ export default async function FinancingPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {financingWithStats.map((row: any) => (
+                {filteredFinancing.map((row: any) => (
                   <tr key={row.id}>
                     <td className="px-4 py-3">{row.financing_code}</td>
                     <td className="px-4 py-3">{row.nama}</td>
@@ -193,4 +250,4 @@ export default async function FinancingPage() {
       </div>
     </section>
   );
-}
+      }
