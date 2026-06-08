@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const title = body.deskripsi ?? body.title ?? "Pengeluaran";
     const nominal = Number(body.nominal ?? body.amount ?? 0);
     const kategori = body.kategori ?? body.category ?? "Lainnya";
-    const pos = body.pos ?? body.payment_method ?? "Kas";
+    const pos = body.pos ?? "OPERASIONAL";
     const tgl = body.tgl ?? body.expense_date ?? null;
     const catatan = body.catatan ?? body.notes ?? null;
     const status = body.status ?? "PAID";
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       nominal,
       amount: nominal,
       pos,
-      payment_method: pos,
+      payment_method: body.payment_method ?? pos,
       kategori,
       category: kategori,
       dicatat_oleh: body.dicatat_oleh ?? null,
