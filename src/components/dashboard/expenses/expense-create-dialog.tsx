@@ -13,14 +13,13 @@ const CATEGORY_OPTIONS = [
   "Lainnya",
 ];
 
-const STATUS_OPTIONS = ["PAID", "PENDING", "DRAFT"];
-
-// Ubah sesuai hasil query expenses_pos_check
 const POS_OPTIONS = [
+  { label: "Sosial", value: "SOSIAL" },
   { label: "Operasional", value: "OPERASIONAL" },
-  { label: "Kantor", value: "KANTOR" },
-  { label: "Lainnya", value: "LAINNYA" },
+  { label: "Produktif", value: "PRODUKTIF" },
 ];
+
+const STATUS_OPTIONS = ["PAID", "PENDING", "DRAFT"];
 
 function generateExpenseCode() {
   const random = Math.floor(1000 + Math.random() * 9000);
@@ -36,7 +35,7 @@ export function ExpenseCreateDialog() {
   const [category, setCategory] = useState(CATEGORY_OPTIONS[0]);
   const [amount, setAmount] = useState("");
   const [expenseDate, setExpenseDate] = useState("");
-  const [pos, setPos] = useState(POS_OPTIONS[0].value);
+  const [pos, setPos] = useState(POS_OPTIONS[1].value);
   const [status, setStatus] = useState("PAID");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
@@ -46,6 +45,11 @@ export function ExpenseCreateDialog() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+
+    if (Number(amount || 0) <= 0) {
+      setError("Jumlah pengeluaran harus lebih dari 0.");
+      return;
+    }
 
     startTransition(async () => {
       try {
@@ -82,7 +86,7 @@ export function ExpenseCreateDialog() {
         setCategory(CATEGORY_OPTIONS[0]);
         setAmount("");
         setExpenseDate("");
-        setPos(POS_OPTIONS[0].value);
+        setPos(POS_OPTIONS[1].value);
         setStatus("PAID");
         setNotes("");
         router.refresh();
@@ -190,7 +194,7 @@ export function ExpenseCreateDialog() {
                       </label>
                       <input
                         type="number"
-                        min="0"
+                        min="1"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder="0"
