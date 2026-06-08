@@ -3,24 +3,9 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-const CATEGORY_OPTIONS = [
-  "Operasional",
-  "ATK",
-  "Transport",
-  "Konsumsi",
-  "Perawatan",
-  "Utilitas",
-  "Lainnya",
-];
-
-const PAYMENT_METHOD_OPTIONS = [
-  "Kas",
-  "Transfer",
-  "Bank",
-  "E-Wallet",
-];
-
-const STATUS_OPTIONS = ["DRAFT", "PAID", "PENDING"];
+const CATEGORY_OPTIONS = ["Operasional", "ATK", "Transport", "Konsumsi", "Perawatan", "Utilitas", "Lainnya"];
+const PAYMENT_METHOD_OPTIONS = ["Kas", "Transfer", "Bank", "E-Wallet"];
+const STATUS_OPTIONS = ["PAID", "PENDING", "DRAFT"];
 
 function generateExpenseCode() {
   const random = Math.floor(1000 + Math.random() * 9000);
@@ -51,17 +36,22 @@ export function ExpenseCreateDialog() {
       try {
         const response = await fetch("/api/expenses", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            exp_code: expenseCode,
             expense_code: expenseCode,
-            title,
-            category,
-            amount: Number(amount || 0),
+            tgl: expenseDate || null,
             expense_date: expenseDate || null,
+            deskripsi: title,
+            title,
+            nominal: Number(amount || 0),
+            amount: Number(amount || 0),
+            pos: paymentMethod,
             payment_method: paymentMethod,
+            kategori: category,
+            category,
             status,
+            catatan: notes,
             notes,
           }),
         });
