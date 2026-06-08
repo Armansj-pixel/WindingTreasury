@@ -6,32 +6,33 @@ export async function POST(request: Request) {
     const body = await request.json();
     const supabase = createSupabaseAdminClient();
 
-    const title = body.title?.trim() || body.deskripsi?.trim() || "Pengeluaran";
-    const category = body.category?.trim() || body.kategori?.trim() || "Lainnya";
-    const expenseCode =
-      body.expense_code?.trim() || body.exp_code?.trim() || `EXP-${Date.now()}`;
-    const notes = body.notes?.trim() || body.catatan?.trim() || null;
-    const amount = Number(body.amount ?? body.nominal ?? 0);
-    const expenseDate = body.expense_date ?? body.tgl ?? null;
-    const paymentMethod = body.payment_method?.trim() || body.pos?.trim() || "Kas";
-    const status = body.status?.trim() || "PAID";
+    const expCode = body.exp_code ?? body.expense_code ?? `EXP-${Date.now()}`;
+    const title = body.deskripsi ?? body.title ?? "Pengeluaran";
+    const nominal = Number(body.nominal ?? body.amount ?? 0);
+    const kategori = body.kategori ?? body.category ?? "Lainnya";
+    const pos = body.pos ?? body.payment_method ?? "Kas";
+    const tgl = body.tgl ?? body.expense_date ?? null;
+    const catatan = body.catatan ?? body.notes ?? null;
+    const status = body.status ?? "PAID";
 
     const payload = {
-      exp_code: expenseCode,
-      tgl: expenseDate,
+      exp_code: expCode,
+      expense_code: expCode,
+      tgl,
+      expense_date: tgl,
       deskripsi: title,
-      nominal: amount,
-      pos: paymentMethod,
-      kategori: category,
-      catatan: notes,
-      expense_code: expenseCode,
       title,
-      category,
-      amount,
-      expense_date: expenseDate,
-      payment_method: paymentMethod,
+      nominal,
+      amount: nominal,
+      pos,
+      payment_method: pos,
+      kategori,
+      category: kategori,
+      dicatat_oleh: body.dicatat_oleh ?? null,
+      bukti_url: body.bukti_url ?? null,
+      catatan,
+      notes: catatan,
       status,
-      notes,
     };
 
     const { data, error } = await supabase
